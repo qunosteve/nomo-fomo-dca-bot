@@ -102,6 +102,14 @@ RPC_ENDPOINT=https://api.mainnet-beta.solana.com   # or your Helius / QuickNode 
 VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which uses more useful data but more rpc callss
 ```
 
+🔑 Need Your JSON Wallet Key?
+If you’re not sure how to get the JSON-encoded key from your Solana wallet, use this simple utility:
+
+👉 solana-seed-to-array
+
+It helps you convert your wallet's seed phrase into the proper JSON array format required by this bot.
+Make sure to store it securely and never share it publicly.
+
 > **Tip:** keep `VERBOSE_VERSION=0` while testing on a shared RPC; flip to 1 once you switch to a private endpoint.
 
 ---
