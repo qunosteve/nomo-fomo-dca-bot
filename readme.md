@@ -87,7 +87,7 @@ TELEGRAM_CHAT_ID=           # numeric chat / channel id
 # ─────────────────────────────────────────────────────────────
 # ── Channel-specific event filters ───────────────────────────
 #   Valid comma-separated event kinds:
-#   START, TICK, BALANCE, BUY, SELL, PNL   (or ALL)
+#   START, TICK, BALANCE, BUY, SELL   (or ALL)
 #   Leave the var empty to disable that channel entirely.
 # ─────────────────────────────────────────────────────────────
 CONSOLE_EVENTS=ALL                                    # show everything in terminal
