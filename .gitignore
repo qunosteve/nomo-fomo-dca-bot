@@ -1,0 +1,15 @@
+# --- NoMo' FOMO secrets / runtime data ---
+.env
+dca_state.json
+trade_log.csv
+
+# --- Node & TypeScript build artefacts ---
+node_modules/
+dist/
+.cache/
+*.log
+
+# --- IDE / OS cruft ---
+.vscode/
+.DS_Store
+Thumbs.db
