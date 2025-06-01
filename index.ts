@@ -295,6 +295,7 @@ class DCABot {
   private pausedForNoFunds = false;
   private prevBal = 0;
   private lastTickTime = Date.now();
+  private tokenSymbol: string = ""; 
 
   constructor(
     private cfg: BotConfig,
@@ -417,16 +418,17 @@ private async execBuy(lamports: number, priceUSD: number) {
 try {
   const q = await this.jup.quote(this.SOL_MINT, this.cfg.toTokenMint, lamports);
     const sig = await this.jup.swap(q, this.kp, this.conn);
-    await this.notify.send(EventKind.BUY, `✅ Buy sent: ${sig}`);
+    await this.notify.send(EventKind.BUY, `✅ Buy ${this.tokenSymbol} sent: ${sig}`);
     const ok = await this.confirm(sig);
     if (!ok) throw new Error(`Buy ${sig} failed/timeout`);
 
     const raw: bigint = BigInt(q.outAmount);
     this.state.buys.push({ price: priceUSD, lamports, tokensRaw: raw });
-    await this.notify.send(EventKind.BUY, `✅ Buy confirmed – ${this.human(raw).toFixed(4)} tokens @ $${priceUSD.toFixed(4)}`);
+    await this.notify.send(EventKind.BUY, `✅ Buy confirmed – ${this.human(raw).toFixed(4)} ${this.tokenSymbol} tokens @ $${priceUSD.toFixed(4)}`);
     const solUsdNow = await this.solPriceUSD();
       logTrade([
         new Date().toISOString(),
+        this.tokenSymbol, 
         "BUY",
         sig,
         this.human(raw).toFixed(6),
@@ -467,7 +469,7 @@ private async execSellAll(priceUSD: number) {
 
   const q  = await this.jup.quote(this.cfg.toTokenMint, this.SOL_MINT, sellRaw);
   const sig = await this.jup.swap(q, this.kp, this.conn);
-  await this.notify.send(EventKind.SELL, `✅ Sell sent: ${sig}`);
+  await this.notify.send(EventKind.SELL, `✅ Sell ${this.tokenSymbol} sent: ${sig}`);
 
   const ok = await this.confirm(sig);
   if (!ok) throw new Error(`Sell ${sig} failed/timeout`);
@@ -490,11 +492,12 @@ private async execSellAll(priceUSD: number) {
 
   await this.notify.send(
     EventKind.SELL,
-    `💰 Sold ${this.human(sellRaw).toFixed(4)} tokens → ${solOut.toFixed(3)} SOL (~$${usdOut.toFixed(2)})\n${summary}`
+    `💰 Sold ${this.human(sellRaw).toFixed(4)} ${this.tokenSymbol} tokens → ${solOut.toFixed(3)} SOL (~$${usdOut.toFixed(2)})\n${summary}`
   );
 
   logTrade([
   new Date().toISOString(),
+  this.tokenSymbol, 
   "SELL",
   sig,
   this.human(sellRaw).toFixed(6),
@@ -611,6 +614,7 @@ private async execSellAll(priceUSD: number) {
       `https://api.dexscreener.com/latest/dex/pairs/solana/${this.cfg.pairAddress}`
     );
     const { baseToken, quoteToken } = data.pair;
+    this.tokenSymbol = baseToken.symbol;
     await this.notify.send(
       EventKind.START,
       `📊 Trading pair: ${baseToken.symbol}/${quoteToken.symbol}`
