@@ -171,13 +171,12 @@ git clone https://github.com/qunosteve/nomo-fomo-dca-bot
 cd nomo-fomo-dca-bot
 npm install
 
-# 2 · Create .env (see template above)
+# 2 · Create .env file in the nomo-fomo-dca-bot directory (see template above)
 
 # 3 · Run
 npx ts-node index.ts
 ```
 
-*Docker users – see the Dockerfile at the bottom.*
 
 ---
 
