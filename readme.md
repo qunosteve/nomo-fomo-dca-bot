@@ -53,7 +53,7 @@ If the program, your VPS or laptop crashes, simply restart – the bot reloads t
 
 # ─────────────────────────────────────
 #  Wallet key (get your JSON formatted key here: https://github.com/qunosteve/solana-seed-to-array )
-#  For best practices and use the key from a separate wallet from your main wallet
+#  For best practices, use the key from a separate wallet, not your main wallet
 # ─────────────────────────────────────
 PRIVATE_KEY=[123,456,...,]
 
