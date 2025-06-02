@@ -106,6 +106,15 @@ VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which us
 
 ---
 
+### 🔑 Need Your JSON Wallet Key?
+
+If you’re not sure how to get the JSON-encoded key from your Solana wallet, use this simple utility:
+
+👉 [solana-seed-to-array](https://github.com/qunosteve/solana-seed-to-array)
+
+It helps you convert your wallet's seed phrase into the proper JSON array format required by this bot.  
+Make sure to **store it securely** and never share it publicly.
+
 ## 🧪 Example Configurations
 
 ### 1. **BONK** – Deep‑Dip, Wide Steps
