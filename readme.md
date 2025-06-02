@@ -188,7 +188,7 @@ npm install # Learn about npm here: https://www.w3schools.com/whatis/whatis_npm.
 npx ts-node index.ts
 
 # 4 · Update
-ctrl+c (y)
+CTRL+c #y
 git pull origin main
 npx ts-node index.ts
 
