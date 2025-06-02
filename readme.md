@@ -216,7 +216,7 @@ Want zero tip? Fork the repo and comment out three lines – it’s open‑sourc
 Every confirmed buy/sell is appended to **`trade_log.csv`** with:
 
 ```
-timestamp,event,tx,tokens,token_price_usd,sol_delta,sol_price_usd,usd_delta,pnl_pct
+timestamp,symbol,event,tx,tokens,token_price_usd,sol_delta,sol_price_usd,usd_delta,pnl_pct
 ```
 
 Import into Excel, Sheets, or your accountant’s software for painless capital‑gains tracking.
