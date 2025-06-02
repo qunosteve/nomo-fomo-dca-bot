@@ -180,19 +180,18 @@ Dip trigger grows 25 % each rung, so buys slow down in free‑falls.
 # 1 · Download & install
 git clone https://github.com/qunosteve/nomo-fomo-dca-bot
 cd nomo-fomo-dca-bot
-npm install
+npm install # Learn about npm here: https://www.w3schools.com/whatis/whatis_npm.asp
 
 # 2 · Create .env file in the nomo-fomo-dca-bot directory (see template above)
 
 # 3 · Run
 npx ts-node index.ts
-```
 
-## ⏩ Downloading/Installing new Features & Patches
-
-```bash
-cd nomo-fomo-dca-bot
+# 3 · Update (get new features/etc)
+ctrl+c #to stop bot
 git pull origin main
+npx ts-node index.ts
+
 ```
 
 ---
