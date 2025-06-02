@@ -100,7 +100,7 @@ TELEGRAM_EVENTS=SELL                                  # just final sells to Tele
 #  Normal mode works on Helius Free Tier. go to https://www.helius.dev/ and set it up
 # ─────────────────────────────────────
 RPC_ENDPOINT=https://api.mainnet-beta.solana.com   # or your Helius / QuickNode URL
-VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which uses more useful data but more rpc callss
+VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which uses more useful data but more rpc calls
 TICK_INTERVAL_MS=60000
 ```
 
@@ -199,7 +199,7 @@ git pull origin main
 
 ## 💸 About the Tip‑Jar
 
-NoMo' FOMO never charges volume fees. Instead, it tips **1 % of *net profit*** to the creator and automatically retries if a transfer fails.
+NoMo' FOMO never charges volume fees. Instead, it tips **1 % of *net profit***.
 Tips accrue on‑chain until they reach **\$0.01** (≈ 0.00005 SOL) to save fees.
 
 | Profit | Tip (1 %) | You Keep |
