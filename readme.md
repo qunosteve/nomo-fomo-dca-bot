@@ -27,7 +27,8 @@ A dual‑edition design lets you conserve RPC calls in **Normal** mode while pow
 | Manual‑sale detection (`getSignaturesForAddress`)     | —                         | ✔️ every tick |
 | Tip‑jar (1 % of net profit) with retry                | ✔️                        | ✔️            |
 | Channel‑specific Discord / Telegram alerts            | ✔️                        | ✔️            |
-| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**      |
+| Configurable RPC call tick frequency                  | ✔️                        | ✔️            |
+| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**       |
 
 **Bottom line:** Normal mode uses **\~80 % fewer RPC calls** – perfect for public endpoints or limited Helius plans.
 
