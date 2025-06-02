@@ -100,6 +100,7 @@ TELEGRAM_EVENTS=SELL                                  # just final sells to Tele
 # ─────────────────────────────────────
 RPC_ENDPOINT=https://api.mainnet-beta.solana.com   # or your Helius / QuickNode URL
 VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which uses more useful data but more rpc callss
+TICK_INTERVAL_MS=60000
 ```
 
 > **Tip:** keep `VERBOSE_VERSION=0` while testing on a shared RPC; flip to 1 once you switch to a private endpoint.
@@ -186,6 +187,13 @@ npm install
 npx ts-node index.ts
 ```
 
+## ⏩ Downloading/Installing new Features & Patches
+
+```bash
+# 1 · Update/Patch Bot
+cd nomo-fomo-dca-bot
+git pull origin main
+```
 
 ---
 
