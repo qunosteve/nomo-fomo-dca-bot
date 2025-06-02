@@ -76,6 +76,7 @@ interface BotConfig {
   dcaPctMult: number;      
   buyDropPct: number;
   sellProfitPct: number;
+  tickIntervalMs: number;
   // channels & filters (comma‑separated list of EventKind or "ALL")
   consoleEvents: string;
   discordEvents?: string;
@@ -104,6 +105,7 @@ function buildConfig(): BotConfig {
     dcaPctMult: Number(process.env.DCA_PCT_MULT ?? 1),
     sellProfitPct: Number(process.env.SELL_PROFIT_PCT ?? 2.5),
     consoleEvents: process.env.CONSOLE_EVENTS ?? "ALL",
+    tickIntervalMs: Number(process.env.TICK_INTERVAL_MS ?? 60000),
     discordEvents: process.env.DISCORD_EVENTS,
     telegramEvents: process.env.TELEGRAM_EVENTS,
     discordWebhook: process.env.DISCORD_WEBHOOK,
@@ -751,5 +753,5 @@ private async execSellAll(priceUSD: number) {
   await bot.init();
 
   await bot.tick();
-  setInterval(() => bot.tick(), 60_000);
+  setInterval(() => bot.tick(), cfg.tickIntervalMs);
 })();
