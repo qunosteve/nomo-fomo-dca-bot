@@ -190,7 +190,6 @@ npx ts-node index.ts
 ## ⏩ Downloading/Installing new Features & Patches
 
 ```bash
-# 1 · Update/Patch Bot
 cd nomo-fomo-dca-bot
 git pull origin main
 ```
