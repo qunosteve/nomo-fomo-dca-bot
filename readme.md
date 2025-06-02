@@ -187,7 +187,7 @@ npm install # Learn about npm here: https://www.w3schools.com/whatis/whatis_npm.
 # 3 · Run
 npx ts-node index.ts
 
-# 3 · Update (get new features/etc)
+# 4 · Update
 ctrl+c #to stop bot
 git pull origin main
 npx ts-node index.ts
