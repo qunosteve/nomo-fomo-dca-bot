@@ -25,7 +25,7 @@ A dual‑edition design lets you conserve RPC calls in **Normal** mode while pow
 | Token‑switch auto‑reset                               | ✔️                        | ✔️            |
 | Wallet balance polling (`getBalance`)                 | —                         | ✔️ every tick |
 | Manual‑sale detection (`getSignaturesForAddress`)     | —                         | ✔️ every tick |
-| Tip‑jar (1 % of net profit) with retry                | ✔️                        | ✔️            |
+| Tip‑jar (1 % of net profit)                | ✔️                        | ✔️            |
 | Channel‑specific Discord / Telegram alerts            | ✔️                        | ✔️            |
 | Configurable RPC call tick frequency                  | ✔️                        | ✔️            |
 | Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**       |
