@@ -184,7 +184,7 @@ npm install # Learn about npm here: https://www.w3schools.com/whatis/whatis_npm.
 
 # 2 · Create .env file in the nomo-fomo-dca-bot directory (see template above)
 
-# 3 · Run
+# 3 · Run (Note: you might have to run "chmod +x node_nodules/.bin/ts-node" on MAC/Linux if you're running into permissions issues)
 npx ts-node index.ts
 
 # 4 · Update
