@@ -25,9 +25,10 @@ A dual‑edition design lets you conserve RPC calls in **Normal** mode while pow
 | Token‑switch auto‑reset                               | ✔️                        | ✔️            |
 | Wallet balance polling (`getBalance`)                 | —                         | ✔️ every tick |
 | Manual‑sale detection (`getSignaturesForAddress`)     | —                         | ✔️ every tick |
-| Tip‑jar (1 % of net profit) with retry                | ✔️                        | ✔️            |
+| Tip‑jar (1 % of net profit)                | ✔️                        | ✔️            |
 | Channel‑specific Discord / Telegram alerts            | ✔️                        | ✔️            |
-| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**      |
+| Configurable RPC call tick frequency                  | ✔️                        | ✔️            |
+| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**       |
 
 **Bottom line:** Normal mode uses **\~80 % fewer RPC calls** – perfect for public endpoints or limited Helius plans.
 
@@ -99,7 +100,8 @@ TELEGRAM_EVENTS=SELL                                  # just final sells to Tele
 #  Normal mode works on Helius Free Tier. go to https://www.helius.dev/ and set it up
 # ─────────────────────────────────────
 RPC_ENDPOINT=https://api.mainnet-beta.solana.com   # or your Helius / QuickNode URL
-VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which uses more useful data but more rpc callss
+VERBOSE_VERSION=0   # 0 =doesn't query wallet balance/etc, 1 = verbose, which uses more useful data but more rpc calls
+TICK_INTERVAL_MS=60000
 ```
 
 > **Tip:** keep `VERBOSE_VERSION=0` while testing on a shared RPC; flip to 1 once you switch to a private endpoint.
@@ -178,20 +180,25 @@ Dip trigger grows 25 % each rung, so buys slow down in free‑falls.
 # 1 · Download & install
 git clone https://github.com/qunosteve/nomo-fomo-dca-bot
 cd nomo-fomo-dca-bot
-npm install
+npm install # Learn about npm here: https://www.w3schools.com/whatis/whatis_npm.asp
 
 # 2 · Create .env file in the nomo-fomo-dca-bot directory (see template above)
 
-# 3 · Run
+# 3 · Run (Note: you might have to run "chmod +x node_nodules/.bin/ts-node" on MAC/Linux if you're running into permissions issues)
 npx ts-node index.ts
-```
 
+# 4 · Update
+CTRL+c #y
+git pull origin main
+npx ts-node index.ts
+
+```
 
 ---
 
 ## 💸 About the Tip‑Jar
 
-NoMo' FOMO never charges volume fees. Instead, it tips **1 % of *net profit*** to the creator and automatically retries if a transfer fails.
+NoMo' FOMO never charges volume fees. Instead, it tips **1 % of *net profit***.
 Tips accrue on‑chain until they reach **\$0.01** (≈ 0.00005 SOL) to save fees.
 
 | Profit | Tip (1 %) | You Keep |
@@ -208,7 +215,7 @@ Want zero tip? Fork the repo and comment out three lines – it’s open‑sourc
 Every confirmed buy/sell is appended to **`trade_log.csv`** with:
 
 ```
-timestamp,event,tx,tokens,token_price_usd,sol_delta,sol_price_usd,usd_delta,pnl_pct
+timestamp,symbol,event,tx,tokens,token_price_usd,sol_delta,sol_price_usd,usd_delta,pnl_pct
 ```
 
 Import into Excel, Sheets, or your accountant’s software for painless capital‑gains tracking.
