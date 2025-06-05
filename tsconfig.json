@@ -1,11 +1,14 @@
+// tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "commonjs",
+    "rootDir": "./",         // allow root‐level .ts plus src/
+    "outDir": "dist",
     "esModuleInterop": true,
-    "resolveJsonModule": true,
     "strict": true,
-    "skipLibCheck": true
-  }
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "include": ["index.ts", "src/**/*.ts"]
 }
