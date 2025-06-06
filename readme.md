@@ -177,6 +177,7 @@ Dip trigger grows 25 % each rung, so buys slow down in free‑falls.
 ## ⏩ Quick Start
 
 ```bash
+###### Use CMD/Powershell on Windows or Terminal on Mac/Linux ######
 # 1 · Download & install
 git clone https://github.com/qunosteve/nomo-fomo-dca-bot
 cd nomo-fomo-dca-bot
