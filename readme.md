@@ -201,7 +201,7 @@ npx ts-node index.ts
 ## 💸 About the Tip‑Jar
 
 NoMo' FOMO never charges volume fees. Instead, it tips **1 % of *net profit***.
-Tips accrue until they reach **\$0.01** (≈ 0.00007 SOL) to save fees.
+Tips accrue until they reach **\$0.01** (≈ 0.00007 SOL) before transmit to save fees.
 
 | Profit | Tip (1 %) | You Keep |
 | ------ | --------- | -------- |
