@@ -190,6 +190,7 @@ npx ts-node index.ts
 # 4 · Update
 CTRL+c #y
 git pull origin main
+npm install
 npx ts-node index.ts
 
 ```
