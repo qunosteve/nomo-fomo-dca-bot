@@ -41,8 +41,12 @@ async function main() {
   });
 
   // Helper to get existing or fallback default
-  const getDefault = (key: string, fallback: string) =>
-    envIndex[key] != null ? envLines[envIndex[key]].split('=')[1] : fallback;
+  const getDefault = (key: string, fallback: string) => {
+    if (envIndex[key] == null) return fallback;
+    const line = envLines[envIndex[key]];
+    const idx  = line.indexOf('=');
+    return idx >= 0 ? line.slice(idx + 1) : fallback;
+  };
 
   // Section selector
   const sections = ['PRIVATE_KEY','PAIR','LADDER','PROFIT','RPC'];
