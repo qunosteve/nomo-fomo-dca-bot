@@ -59,7 +59,7 @@ export function buildConfig(): BotConfig {
     rpc: process.env.RPC_ENDPOINT ?? "https://api.mainnet-beta.solana.com",
     pairAddress: required("PAIR_ADDRESS"),
     toTokenMint: required("TO_TOKEN_MINT"),
-    initialBuyLamports: Number(process.env.INITIAL_BUY_SOL ?? 0.0125) * 1e9,
+    initialBuyLamports: Math.floor(Number(process.env.INITIAL_BUY_SOL ?? 0.0125) * 1e9),
     buyDropPct: Number(process.env.BUY_DROP_PCT ?? 10),
     maxBuys: Number(process.env.MAX_BUYS ?? 0),    // 0 means “unlimited”
     dcaVolMult: Number(process.env.DCA_VOL_MULT ?? 2),

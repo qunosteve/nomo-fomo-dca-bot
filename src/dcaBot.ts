@@ -24,9 +24,10 @@ export class DCABot {
   private readonly SOL_MINT =
     "So11111111111111111111111111111111111111112";
 
-  private nextSize(buyIndex: number) {
-    return this.cfg.initialBuyLamports * Math.pow(this.cfg.dcaVolMult, buyIndex);
-  }
+ private nextSize(buyIndex: number) {
+  const size = this.cfg.initialBuyLamports * Math.pow(this.cfg.dcaVolMult, buyIndex);
+  return Math.floor(size);
+}
   private nextDropPct(buyIndex: number) {
     return this.cfg.buyDropPct * Math.pow(this.cfg.dcaPctMult, buyIndex);
   }
