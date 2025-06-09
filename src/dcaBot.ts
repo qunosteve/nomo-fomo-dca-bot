@@ -119,6 +119,20 @@ export class DCABot {
     return false;
   }
 
+    private async fetchOnChainRaw(ata: PublicKey): Promise<bigint> {
+    try {
+      const resp = await this.conn.getTokenAccountBalance(ata);
+      return BigInt(resp.value.amount);
+    } catch (e: any) {
+      // RPC-32602 = “Invalid param: could not find account”
+      if (e.code === -32602 || /could not find account/.test(e.message)) {
+        return 0n;
+      }
+      throw e;
+    }
+  }
+
+
     private async detectUnderflowAndReset(): Promise<boolean> {
     // derive your ATA
     const ata = await getAssociatedTokenAddress(
@@ -130,11 +144,9 @@ export class DCABot {
     );
 
     // fetch on-chain raw tokens
-    const onChainRaw = BigInt(
-      (await this.conn.getTokenAccountBalance(ata)).value.amount
-    );
-
+    const onChainRaw = await this.fetchOnChainRaw(ata);
     // sum up what your ladder thinks you own
+    
     const expectedRaw = this.state.buys.reduce<bigint>(
       (sum, b) => sum + b.tokensRaw,
       0n
