@@ -1,6 +1,6 @@
 # NoMo' FOMO: On‑chain Dollar‑Cost‑Average Bot
 
-**Version 4.0.1 (Alpha)**  •  **Normal & Verbose modes**
+**Version 4.0.2 (Alpha)**  •  **Normal & Verbose modes**
 *(now with CSV ledger, token‑aware state reset, fully tunable DCA multipliers, and an adaptive interactive setup)*
 
 NoMo' FOMO is a self‑custodial, open‑source **Dollar Cost Average (DCA)** bot for **Solana**. It buys dips, takes profits, logs every fill to **`trade_log.csv`**, and sends alerts in real time.
@@ -14,21 +14,25 @@ A dual‑edition design lets you conserve RPC calls in **Normal** mode while pow
 
 |                                                       | **Normal Mode** (default) | **Verbose Mode** |
 | ----------------------------------------------------- | ------------------------- | ---------------- |
-| Self‑custodial, open source                           | ✔️                        | ✔️               |
+| Self-custodial, open source                           | ✔️                        | ✔️               |
 | Tunable DCA **volume multiplier** (size ladder)       | ✔️                        | ✔️               |
 | Tunable DCA **percentage multiplier** (dip ladder)    | ✔️                        | ✔️               |
-| Configurable **max buys** or *buy‑till‑dry*           | ✔️                        | ✔️               |
-| Ladder preview (total SOL & % draw‑down absorbed)     | ✔️                        | ✔️               |
-| Auto‑sell on profit‑target                            | ✔️                        | ✔️               |
+| Configurable **max buys** or *buy-till-dry*           | ✔️                        | ✔️               |
+| Ladder preview (total SOL & % draw-down absorbed)     | ✔️                        | ✔️               |
+| Auto-sell on profit-target                            | ✔️                        | ✔️               |
 | CSV ledger `trade_log.csv`                            | ✔️                        | ✔️               |
 | **`dca_state.json`** persistence (resume after crash) | ✔️                        | ✔️               |
-| Token‑switch auto‑reset                               | ✔️                        | ✔️               |
+| Token-switch auto-reset                               | ✔️                        | ✔️               |
 | Wallet balance polling (`getBalance`)                 | —                         | ✔️ every tick    |
-| Manual‑sale detection (`getSignaturesForAddress`)     | —                         | ✔️ every tick    |
-| Tip‑jar (1 % of net profit)                           | ✔️                        | ✔️               |
-| Channel‑specific Discord / Telegram alerts            | ✔️                        | ✔️               |
+| Manual-sale detection (`getSignaturesForAddress`)     | —                         | ✔️ every tick    |
+| Tip-jar (1 % of net profit)                           | ✔️                        | ✔️               |
+| Channel-specific Discord / Telegram alerts            | ✔️                        | ✔️               |
 | Configurable RPC call tick frequency                  | ✔️                        | ✔️               |
-| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**         |
+| Adaptive **slippage** & **price-impact safeguards**   | ✔️                        | ✔️               |
+| SOL→USD price caching (120 s TTL)                     | ✔️                        | ✔️               |
+| **Dynamic console window title** (token, ladder status & % to TP) | ✔️        | ✔️               |
+| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**         |
+
 
 **Bottom line:** Normal mode uses **∼80 % fewer RPC calls** – perfect for public endpoints or limited Helius plans.
 

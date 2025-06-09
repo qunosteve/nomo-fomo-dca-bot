@@ -1,4 +1,11 @@
 // src/dcaBot.ts
+
+/** Emit ANSI to rename the terminal window */
+function setConsoleTitle(title: string) {
+  // ESC ] 2 ; title BEL
+  process.stdout.write(`\x1b]2;${title}\x07`);
+}
+
 import {
   Connection,
   Keypair,
@@ -111,6 +118,42 @@ export class DCABot {
     }
     return false;
   }
+
+    private async detectUnderflowAndReset(): Promise<boolean> {
+    // derive your ATA
+    const ata = await getAssociatedTokenAddress(
+      new PublicKey(this.cfg.toTokenMint),
+      this.kp.publicKey,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    // fetch on-chain raw tokens
+    const onChainRaw = BigInt(
+      (await this.conn.getTokenAccountBalance(ata)).value.amount
+    );
+
+    // sum up what your ladder thinks you own
+    const expectedRaw = this.state.buys.reduce<bigint>(
+      (sum, b) => sum + b.tokensRaw,
+      0n
+    );
+
+    // only reset if you actually have fewer tokens on-chain
+    if (onChainRaw < (expectedRaw * 9n / 10n)) {
+      await this.notify.send(
+        EventKind.TICK,
+        `⚠️ Underflow detected: on-chain ${this.human(onChainRaw)} ${this.tokenSymbol} < DCA‐state ${this.human(expectedRaw)} — resetting ladder`
+      );
+      this.state.buys = [];
+      this.state.save();
+      return true;
+    }
+
+    return false;
+  }
+
 
   private async fetchBalance(): Promise<number> {
     // FREE tier: skip RPC
@@ -240,42 +283,84 @@ export class DCABot {
     }
   }
 
-  private async execSellAll(priceUSD: number) {
-    const totalRaw = this.state.buys.reduce<bigint>(
-      (s, b) => s + b.tokensRaw,
-      0n
-    );
-    if (totalRaw === 0n) return;
-
-    const ata = await getAssociatedTokenAddress(
+private async execSellAll(priceUSD: number) {
+  const totalRaw = this.state.buys.reduce<bigint>((sum,b) => sum + b.tokensRaw, 0n);
+      const ata = await getAssociatedTokenAddress(
       new PublicKey(this.cfg.toTokenMint),
       this.kp.publicKey,
       false,
       TOKEN_PROGRAM_ID,
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
-    const onChainLamports = BigInt(
-      (await this.conn.getTokenAccountBalance(ata)).value.amount
-    );
-    const sellRaw = onChainLamports < totalRaw ? onChainLamports : totalRaw;
+  const onChainLamports = BigInt((await this.conn.getTokenAccountBalance(ata)).value.amount);
+  const sellRaw = onChainLamports < totalRaw ? onChainLamports : totalRaw;
 
-    const q = await this.jup.quote(this.cfg.toTokenMint, this.SOL_MINT, sellRaw);
-    const sig = await this.jup.swap(q, this.kp, this.conn);
+    // **NEW GUARD**
+  if (sellRaw === 0n) {
+    // 1) Clear the ladder
+    this.state.buys = [];
+    // (you probably want to keep `sells` history and `pendingTipLamports` intact)
+
+    // 2) Persist the reset
+    this.state.save();
+
+    // 3) Log & exit early
     await this.notify.send(
-      EventKind.SELL,
-      `✅ Sell ${this.tokenSymbol} sent: ${sig}`
+      EventKind.TICK,
+      "⚠️ No tokens to sell—DCA ladder reset"
     );
+    return;
+  }
 
+
+  // 1) quote with autoSlippage
+  const quote = await this.jup.quote(
+    this.cfg.toTokenMint,
+    this.SOL_MINT,
+    sellRaw,
+    {
+      // statically cap slippage to your configured max (e.g. 50 = 0.5%, etc)
+      slippageBps: this.cfg.maxAutoSlippageBps
+    }
+  );
+
+  // 2) extract impact & thresholds
+  const priceImpactPct   = parseFloat(quote.priceImpactPct);         // e.g. "0.23" ⇒ 0.23%
+  const minLamports      = BigInt(quote.otherAmountThreshold);       // worst-case raw output
+  const minSol           = Number(minLamports) / 1e9;
+  const solUsd           = await this.solPriceUSD();
+  const worstCaseUsd     = minSol * solUsd;
+
+  // 3) compute your cost basis in USD
+  const totalLamports    = this.state.buys.reduce((s, b) => s + b.lamports, 0);
+  const costSol          = totalLamports / 1e9;
+  const costUsd          = costSol * solUsd;
+
+  // 4) what you need to net to hit your profit target AFTER impact
+  const neededUsd = costUsd * (
+    1 + this.cfg.sellProfitPct/100   // your profit %
+      + priceImpactPct/100           // buffer for AMM price-impact
+  );
+
+  if (worstCaseUsd < neededUsd) {
+    await this.notify.send(
+      EventKind.TICK,
+      `⚠️ Skipping sell: worst-case $${worstCaseUsd.toFixed(4)} < target $${neededUsd.toFixed(4)}`
+    );
+    return;
+  }
+
+  // 5) go for it
+  const sig = await this.jup.swap(quote, this.kp, this.conn);
+  await this.notify.send(EventKind.SELL, `✅ Sell sent: ${sig}`);
+  
     const ok = await this.confirm(sig);
     if (!ok) throw new Error(`Sell ${sig} failed/timeout`);
 
-    const solOut = Number(q.outAmount) / 1e9;
-    const solUsd = await this.solPriceUSD();
+    const solOut = Number(quote.outAmount) / 1e9;
     const usdOut = solOut * solUsd;
 
     const costLamports = this.state.buys.reduce((s, b) => s + b.lamports, 0);
-    const costSol = costLamports / 1e9;
-    const costUsd = costSol * solUsd;
 
     const diffUsd = usdOut - costUsd;
     const diffSol = solOut - costSol;
@@ -363,7 +448,8 @@ export class DCABot {
     }
 
     this.pausedForNoFunds = false;
-  }
+
+}
 
   // ------------------ lifecycle ------------------
   async init(): Promise<void> {
@@ -435,27 +521,6 @@ export class DCABot {
     this.tokenSymbol = "TOKEN";
     this.quoteSymbol = "SOL";
   }
-
-
-    /*    Dexscreener price fetch logic begin
-    try {
-      const { data } = await axios.get(
-        `https://api.dexscreener.com/latest/dex/pairs/solana/${this.cfg.pairAddress}`
-      );
-      const { baseToken, quoteToken } = data.pair;
-      this.tokenSymbol = baseToken.symbol;
-      await this.notify.send(
-        EventKind.START,
-        `📊 Trading pair: ${baseToken.symbol}/${quoteToken.symbol}`
-      );
-    } catch {
-      await this.notify.send(
-        EventKind.START,
-        `📊 Trading pair: ${this.cfg.pairAddress}`
-      );
-    }
-      Dexscreener price fetch logic end */
-
     const jumps = this.cfg.maxBuys || 0;
     let totalSol = 0;
     let priceFactor = 1;
@@ -482,6 +547,7 @@ export class DCABot {
   }
 
   async tick(): Promise<void> {
+
     try {
       if (this.cfg.proVersion) {
         if (await this.recentManualSalesDetected()) {
@@ -489,17 +555,12 @@ export class DCABot {
           this.state.save();
         }
       }
-      /*
-      const pair = await axios.get(
-        `https://api.dexscreener.com/latest/dex/pairs/solana/${this.cfg.pairAddress}`
-      );
-      const { baseToken, quoteToken, priceUsd } = pair.data.pair;
-      const price = Number(priceUsd);
-      await this.notify.send(
-        EventKind.TICK,
-        `🪙 ${baseToken.symbol}/${quoteToken.symbol} • $${price.toFixed(6)}`
-      );
-      */
+
+      if (await this.detectUnderflowAndReset()) {
+          this.lastTickTime = Date.now();
+          return;
+        }
+
 
       // 1. Ask Jupiter for how much SOL you get for 1 token
       const quote = await this.jup.quote(
@@ -518,6 +579,15 @@ export class DCABot {
           EventKind.TICK,
           `🪙 ${this.tokenSymbol} • $${price.toFixed(6)}`
         );
+
+        //build and set the console title
+        const avgCost = this.avgPrice(); // in USD
+        const tpPrice = avgCost * (1 + this.cfg.sellProfitPct/100);
+        const neededPct = ((tpPrice / price) - 1) * 100;
+        const buysDone = this.state.buys.length;
+        const maxBuys  = this.cfg.maxBuys === 0 ? "♾️" : this.cfg.maxBuys;
+        const title    = `${this.tokenSymbol} ${buysDone}/${maxBuys} +${neededPct.toFixed(2)}% to TP`;
+        setConsoleTitle(`${title}`);
 
 
       if (this.state.buys.length === 0) {

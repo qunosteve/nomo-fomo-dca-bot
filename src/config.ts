@@ -37,6 +37,7 @@ export interface BotConfig {
   buyDropPct: number;
   sellProfitPct: number;
   tickIntervalMs: number;
+  maxAutoSlippageBps: number;
 
   // channels & filters (comma-separated list of EventKind or "ALL")
   consoleEvents: string;
@@ -73,5 +74,6 @@ export function buildConfig(): BotConfig {
     telegramBot: process.env.TELEGRAM_BOT_TOKEN,
     telegramChat: process.env.TELEGRAM_CHAT_ID,
     proVersion: process.env.VERBOSE_VERSION === "1",
+    maxAutoSlippageBps: Number(process.env.MAX_AUTO_SLIPPAGE_BPS ?? 100), // 1% default
   };
 }
