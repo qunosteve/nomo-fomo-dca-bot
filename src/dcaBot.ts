@@ -39,6 +39,7 @@ export class DCABot {
   private tokenSymbol: string = "";
   private quoteSymbol: string = "";
   private tokenLogo?: string;
+  private solUsdCache = { ts: 0, price: 0 };
 
   constructor(
     private cfg: BotConfig,
@@ -71,12 +72,21 @@ export class DCABot {
   }
 
   private async solPriceUSD(): Promise<number> {
-    const { data } = await axios.get(
-      "https://api.coingecko.com/api/v3/simple/price",
-      { params: { ids: "solana", vs_currencies: "usd" } }
-    );
-    return data.solana.usd;
+  const now = Date.now();
+  // if we fetched less than 120s ago, re-use it
+  if (now - this.solUsdCache.ts < 120_000) {
+    return this.solUsdCache.price;
   }
+
+  // otherwise do one HTTP call…
+  const { data } = await axios.get(
+    "https://api.coingecko.com/api/v3/simple/price",
+    { params: { ids: "solana", vs_currencies: "usd" } }
+  );
+  const usd = data.solana.usd;
+  this.solUsdCache = { ts: now, price: usd };
+  return usd;
+}
 
   private benign0x1771(e: any): boolean {
     return typeof e?.message === "string" && e.message.includes("0x1771");
