@@ -13,7 +13,6 @@ import {
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-
 import { BotConfig, BuyEntry, SellStat, EventKind } from "./config";
 import { NotificationService } from "./notificationService";
 import { StateStore } from "./stateStore";
@@ -38,6 +37,8 @@ export class DCABot {
   private prevBal = 0;
   private lastTickTime = Date.now();
   private tokenSymbol: string = "";
+  private quoteSymbol: string = "";
+  private tokenLogo?: string;
 
   constructor(
     private cfg: BotConfig,
@@ -395,6 +396,38 @@ export class DCABot {
     this.state.tokenMint = this.cfg.toTokenMint;
     this.state.save();
 
+    // src/dcaBot.ts, inside async init()
+
+  try {
+    // one‐time metadata fetch
+    const { data } = await axios.get(
+      `https://api.dexscreener.com/latest/dex/pairs/solana/${this.cfg.pairAddress}`
+    );
+    const { baseToken, quoteToken } = data.pair;
+
+    // stash symbol & quote‐symbol for your logs
+    this.tokenSymbol = baseToken.symbol;
+    this.quoteSymbol = quoteToken.symbol;
+
+    // (optional) token logo, name, decimals…
+    this.tokenLogo = baseToken.logoURI;
+    this.tokenDecimals = baseToken.decimals;
+    
+    await this.notify.send(
+      EventKind.START,
+      `📊 Trading: ${baseToken.symbol}/${quoteToken.symbol}`
+    );
+  } catch (err) {
+    console.warn(
+      `⚠️ Dexscreener metadata lookup failed—falling back to env symbol`
+    );
+    // fallback to a default symbol if not available in config
+    this.tokenSymbol = "TOKEN";
+    this.quoteSymbol = "SOL";
+  }
+
+
+    /*    Dexscreener price fetch logic begin
     try {
       const { data } = await axios.get(
         `https://api.dexscreener.com/latest/dex/pairs/solana/${this.cfg.pairAddress}`
@@ -411,6 +444,7 @@ export class DCABot {
         `📊 Trading pair: ${this.cfg.pairAddress}`
       );
     }
+      Dexscreener price fetch logic end */
 
     const jumps = this.cfg.maxBuys || 0;
     let totalSol = 0;
@@ -445,7 +479,7 @@ export class DCABot {
           this.state.save();
         }
       }
-
+      /*
       const pair = await axios.get(
         `https://api.dexscreener.com/latest/dex/pairs/solana/${this.cfg.pairAddress}`
       );
@@ -455,6 +489,26 @@ export class DCABot {
         EventKind.TICK,
         `🪙 ${baseToken.symbol}/${quoteToken.symbol} • $${price.toFixed(6)}`
       );
+      */
+
+      // 1. Ask Jupiter for how much SOL you get for 1 token
+      const quote = await this.jup.quote(
+          this.cfg.toTokenMint,     // token → SOL
+          this.SOL_MINT,
+          this.tokenMult            // 1 full token, in raw units
+        );
+        const solOut = Number(quote.outAmount) / 1e9;
+
+        // 2. Turn that into USD
+        const solUsd = await this.solPriceUSD();
+        const price = solOut * solUsd;
+
+        // 3. Emit the tick
+        await this.notify.send(
+          EventKind.TICK,
+          `🪙 ${this.tokenSymbol} • $${price.toFixed(6)}`
+        );
+
 
       if (this.state.buys.length === 0) {
         await this.notify.send(EventKind.TICK, "🔰 First buy");

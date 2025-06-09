@@ -1,6 +1,6 @@
 # NoMo' FOMO: On‑chain Dollar‑Cost‑Average Bot
 
-**Version 4.0 (Alpha)**  •  **Normal & Verbose modes**
+**Version 4.0.1 (Alpha)**  •  **Normal & Verbose modes**
 *(now with CSV ledger, token‑aware state reset, fully tunable DCA multipliers, and an adaptive interactive setup)*
 
 NoMo' FOMO is a self‑custodial, open‑source **Dollar Cost Average (DCA)** bot for **Solana**. It buys dips, takes profits, logs every fill to **`trade_log.csv`**, and sends alerts in real time.

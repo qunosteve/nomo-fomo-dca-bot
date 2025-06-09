@@ -1,4 +1,5 @@
-#!/usr/bin/env ts-node
+// setup.ts (in project root)
+// #!/usr/bin/env ts-node
 // @ts-nocheck
 
 import fs from "fs";

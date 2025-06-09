@@ -1,6 +1,6 @@
 {
   "name": "nomo-fomo-dca-bot",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@solana/spl-token": "^0.x",
+    "@solana/spl-token-registry": "^0.2.4574",
     "@solana/web3.js": "^1.98.2",
     "axios": "^0.30.0",
     "bip39": "^3.1.0",
