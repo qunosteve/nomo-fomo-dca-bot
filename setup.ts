@@ -203,8 +203,8 @@ async function main() {
     INITIAL_BUY_SOL: initialBuySol.toString(),
     MAX_BUYS: maxBuys.toString(),
     DCA_VOL_MULT: dcaVolMult.toString(),
-    DCA_PCT_MULT: getDefault('DCA_PCT_MULT','1'),
-    BUY_DROP_PCT: getDefault('BUY_DROP_PCT','10'),
+    BUY_DROP_PCT:   buyDropPct.toString(),  
+    DCA_PCT_MULT:   dcaPctMult.toString(), 
     SELL_PROFIT_PCT: sellProfitPct.toString(),
     TICK_INTERVAL_MS: tickIntervalMs.toString(),
     CONSOLE_EVENTS: consoleEvents
