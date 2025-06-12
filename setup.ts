@@ -153,6 +153,7 @@ async function main() {
       initialBuySol = tb.totalBudgetSol/(dcaVolMult===1?maxBuys:(Math.pow(dcaVolMult,maxBuys)-1)/(dcaVolMult-1));
       console.log(`\n🔢 Per-buy ≈ ${initialBuySol.toFixed(6)} SOL`);
     }
+    let ok = false;
     // Drop loop
 
     do{
@@ -163,7 +164,8 @@ async function main() {
       buyDropPct=da.buyDropPct; dcaPctMult=da.dcaPctMult;
       const df=Array.from({length:maxBuys}).reduce((f,_,i)=>f*(1-(buyDropPct*Math.pow(dcaPctMult,i))/100),1);
       console.log(`\n📐 Absorbs ~${((1-df)*100).toFixed(1)}% drop.`);
-      const ca=await inquirer.prompt({name:'ok',type:'confirm',message:'Proceed?',default:true}); ok=ca.ok;
+      const ca=await inquirer.prompt({name:'ok',type:'confirm',message:'Proceed?',default:true}); 
+      ok=ca.ok;
     } while(!ok);
   } else {
     initialBuySol = parseFloat(getDefault('INITIAL_BUY_SOL','0'));    
