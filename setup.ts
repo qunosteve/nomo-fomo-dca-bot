@@ -152,7 +152,8 @@ async function main() {
       console.log(`\n🔢 Per-buy ≈ ${initialBuySol.toFixed(6)} SOL`);
     }
     // Drop loop
-    let buyDropPct:number,dcaPctMult:number,ok=false;
+    let buyDropPct = parseFloat(getDefault('BUY_DROP_PCT','10'));
+    let dcaPctMult = parseFloat(getDefault('DCA_PCT_MULT','1'));
     do{
       const da = await inquirer.prompt([
         {name:'buyDropPct', type:'input', message:'Drop % per rung:', default:getDefault('BUY_DROP_PCT','10'),validate:v=>isNaN(parseFloat(v))?'Num?':true,filter:v=>parseFloat(v)},
