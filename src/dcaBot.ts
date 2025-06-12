@@ -595,7 +595,7 @@ private async execSellAll(priceUSD: number) {
         //build and set the console title
         const avgCost    = this.avgPrice();   
         const tpPrice    = avgCost * (1 + this.cfg.sellProfitPct/100);
-        const neededPct  = ((tpPrice / price) - 1) * 100;
+        const neededPct  = (1 - (tpPrice / price)) * 100;
         const buysDone   = this.state.buys.length;
         const maxBuys    = this.cfg.maxBuys === 0 ? "♾️" : this.cfg.maxBuys;
 
