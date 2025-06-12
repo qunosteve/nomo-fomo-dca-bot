@@ -226,9 +226,7 @@ async function main() {
     if(envIndex[k]!=null) envLines[envIndex[k]]=`${k}=${v}`;
     else envLines.push(`${k}=${v}`);
   });
-  console.log('✔️  envPath =', envPath);
   fs.writeFileSync(envPath, envLines.join('\n'));
-  console.log('✔️  Final .env contents:\n', fs.readFileSync(envPath,'utf8'));
   console.log("\n✅ Setup complete! .env updated.\n");
 }
 

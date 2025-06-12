@@ -593,13 +593,18 @@ private async execSellAll(priceUSD: number) {
         );
 
         //build and set the console title
-        const avgCost = this.avgPrice(); // in USD
-        const tpPrice = avgCost * (1 + this.cfg.sellProfitPct/100);
-        const neededPct = ((tpPrice / price) - 1) * 100;
-        const buysDone = this.state.buys.length;
-        const maxBuys  = this.cfg.maxBuys === 0 ? "♾️" : this.cfg.maxBuys;
-        const title    = `${this.tokenSymbol} ${buysDone}/${maxBuys} +${neededPct.toFixed(2)}% to TP`;
-        setConsoleTitle(`${title}`);
+        const avgCost    = this.avgPrice();   
+        const tpPrice    = avgCost * (1 + this.cfg.sellProfitPct/100);
+        const neededPct  = ((tpPrice / price) - 1) * 100;
+        const buysDone   = this.state.buys.length;
+        const maxBuys    = this.cfg.maxBuys === 0 ? "♾️" : this.cfg.maxBuys;
+
+        // prefix 🤏 when positive, nothing when zero/negative
+        const signOrEmoji    = neededPct > 0 ? '🤏' : '';
+        const formattedPct   = `${signOrEmoji}${neededPct.toFixed(2)}%`;
+        const title          = `${this.tokenSymbol} ${buysDone}/${maxBuys} ${formattedPct} to TP`;
+
+        setConsoleTitle(title);
 
 
       if (this.state.buys.length === 0) {
