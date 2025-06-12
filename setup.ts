@@ -123,6 +123,8 @@ async function main() {
 
   // 3) Ladder
   let initialBuySol:number, maxBuys:number, dcaVolMult:number;
+  let buyDropPct = parseFloat(getDefault('BUY_DROP_PCT','10'));
+  let dcaPctMult = parseFloat(getDefault('DCA_PCT_MULT','1'));
   if (updateSections.includes('LADDER')) {
     const bm = await inquirer.prompt({
       name:'budgetMode', type:'list', message:'Per-buy or total budget?',
@@ -152,8 +154,7 @@ async function main() {
       console.log(`\n🔢 Per-buy ≈ ${initialBuySol.toFixed(6)} SOL`);
     }
     // Drop loop
-    let buyDropPct = parseFloat(getDefault('BUY_DROP_PCT','10'));
-    let dcaPctMult = parseFloat(getDefault('DCA_PCT_MULT','1'));
+
     do{
       const da = await inquirer.prompt([
         {name:'buyDropPct', type:'input', message:'Drop % per rung:', default:getDefault('BUY_DROP_PCT','10'),validate:v=>isNaN(parseFloat(v))?'Num?':true,filter:v=>parseFloat(v)},
@@ -223,7 +224,9 @@ async function main() {
     if(envIndex[k]!=null) envLines[envIndex[k]]=`${k}=${v}`;
     else envLines.push(`${k}=${v}`);
   });
+  console.log('✔️  envPath =', envPath);
   fs.writeFileSync(envPath, envLines.join('\n'));
+  console.log('✔️  Final .env contents:\n', fs.readFileSync(envPath,'utf8'));
   console.log("\n✅ Setup complete! .env updated.\n");
 }
 
