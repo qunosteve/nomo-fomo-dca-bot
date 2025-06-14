@@ -602,7 +602,7 @@ private async execSellAll(priceUSD: number) {
         // prefix 🤏 when positive, nothing when zero/negative
         const signOrEmoji    = neededPct > 0 ? '🤏' : '';
         const formattedPct   = `${signOrEmoji}${neededPct.toFixed(2)}%`;
-        const title          = `${this.tokenSymbol} ${buysDone}/${maxBuys} ${formattedPct} to TP`;
+        const title          = `${this.tokenSymbol} ${buysDone}/${maxBuys} ${formattedPct}`;
 
         setConsoleTitle(title);
 
