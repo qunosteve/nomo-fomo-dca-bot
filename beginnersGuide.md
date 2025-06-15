@@ -87,7 +87,7 @@ Watch your terminal for updates and bot actions! 📈
 
 ## 📖 More resources
 
-✅ When you're ready, check out the [Quick Start section in the README](./README.md) for advanced setup options and tips!
+✅ When you're ready, check out the [README](https://github.com/qunosteve/nomo-fomo-dca-bot/blob/main/README.md) for advanced setup options and tips!
 
 Happy trading and welcome to the world of on-chain! 🌊
 
