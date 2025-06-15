@@ -25,8 +25,7 @@ NoMo' FOMO is a self‑custodial, open‑source **Dollar Cost Average (DCA
 | CSV ledger `trade_log.csv`                                        | ✔️            |
 | **`dca_state.json`** persistence (resume after crash)             | ✔️            |
 | Token-switch auto-reset                                           | ✔️            |
-| Wallet balance polling (`getBalance`)                             | ✔️            |
-| Manual-sale detection (`getSignaturesForAddress`)                 | ✔️            |
+| Manual-sale detection (resets ladder if you manually sell in your wallet client)                 | ✔️            |
 | Channel-specific Discord / Telegram alerts                        | ✔️            |
 | Configurable RPC call tick frequency                              | ✔️            |
 | Adaptive **slippage** & **price-impact safeguards**               | ✔️            |
