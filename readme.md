@@ -1,10 +1,9 @@
 # NoMo' FOMO: On‑chain Dollar‑Cost‑Average Bot
 
-**Version 4.0.3 (Alpha)**  •  **Normal & Verbose modes**
-*(now with CSV ledger, token‑aware state reset, fully tunable DCA multipliers, and an adaptive interactive setup)*
+**Version 4.1.0 (Alpha)**
+*(now with CSV ledger, token‑aware state reset, Bollinger Bands no-buy zone, and an adaptive interactive setup)*
 
 NoMo' FOMO is a self‑custodial, open‑source **Dollar Cost Average (DCA)** bot for **Solana**. It buys dips, takes profits, logs every fill to **`trade_log.csv`**, and sends alerts in real time.
-A dual‑edition design lets you conserve RPC calls in **Normal** mode while power‑users unlock full monitoring in **Verbose** mode.
 
 > 🔐 **Self‑Custodial** – your private key never leaves your machine.
 
@@ -12,28 +11,26 @@ A dual‑edition design lets you conserve RPC calls in **Normal** mode while pow
 
 ## 🚀 Feature Matrix
 
-|                                                       | **Normal Mode** (default) | **Verbose Mode** |
-| ----------------------------------------------------- | ------------------------- | ---------------- |
-| Self-custodial, open source                           | ✔️                        | ✔️               |
-| Tunable DCA **volume multiplier** (size ladder)       | ✔️                        | ✔️               |
-| Tunable DCA **percentage multiplier** (dip ladder)    | ✔️                        | ✔️               |
-| Configurable **max buys** or *buy-till-dry*           | ✔️                        | ✔️               |
-| Ladder preview (total SOL & % draw-down absorbed)     | ✔️                        | ✔️               |
-| Auto-sell on profit-target                            | ✔️                        | ✔️               |
-| CSV ledger `trade_log.csv`                            | ✔️                        | ✔️               |
-| **`dca_state.json`** persistence (resume after crash) | ✔️                        | ✔️               |
-| Token-switch auto-reset                               | ✔️                        | ✔️               |
-| Wallet balance polling (`getBalance`)                 | —                         | ✔️ every tick    |
-| Manual-sale detection (`getSignaturesForAddress`)     | —                         | ✔️ every tick    |
-| Channel-specific Discord / Telegram alerts            | ✔️                        | ✔️               |
-| Configurable RPC call tick frequency                  | ✔️                        | ✔️               |
-| Adaptive **slippage** & **price-impact safeguards**   | ✔️                        | ✔️               |
-| SOL→USD price caching (120 s TTL)                     | ✔️                        | ✔️               |
-| **Dynamic console window title** (token, ladder status & % to TP) | ✔️        | ✔️               |
-| Typical RPC calls ∕ hour *(60 s tick)*                | **≈ 15**                  | **≈ 75**         |
-
-
-**Bottom line:** Normal mode uses **∼80 % fewer RPC calls** – perfect for public endpoints or limited Helius plans.
+|                                                                   | **Available** |
+| ----------------------------------------------------------------- | ------------- |
+| Self-custodial, open source                                       | ✔️            |
+| Tunable DCA **volume multiplier** (size ladder)                   | ✔️            |
+| Tunable DCA **percentage multiplier** (dip ladder)                | ✔️            |
+| Configurable **max buys** or *buy-till-dry*                       | ✔️            |
+| Ladder preview (total SOL & % draw-down absorbed)                 | ✔️            |
+| Auto-sell on profit-target                                        | ✔️            |
+| CSV ledger `trade_log.csv`                                        | ✔️            |
+| **`dca_state.json`** persistence (resume after crash)             | ✔️            |
+| Token-switch auto-reset                                           | ✔️            |
+| Wallet balance polling (`getBalance`)                             | ✔️            |
+| Manual-sale detection (`getSignaturesForAddress`)                 | ✔️            |
+| Channel-specific Discord / Telegram alerts                        | ✔️            |
+| Configurable RPC call tick frequency                              | ✔️            |
+| Adaptive **slippage** & **price-impact safeguards**               | ✔️            |
+| SOL→USD price caching (120 s TTL)                                 | ✔️            |
+| **Bollinger Bands no-buy zone (prevents buys above upper band)**  | ✔️            |
+| **Dynamic console window title** (token, ladder status & % to TP) | ✔️            |
+| Typical RPC calls ∕ hour *(60 s tick)*                            | **≈ 75**      |
 
 ---
 
@@ -70,9 +67,12 @@ DCA_PCT_MULT=1.1            # Drop‑% multiplier per rung
 BUY_DROP_PCT=10             # % drop to trigger each buy
 SELL_PROFIT_PCT=2.5         # % profit to trigger sell
 TICK_INTERVAL_MS=60000      # Poll interval in ms
+BOLLINGER_PERIOD=20         # Bollinger Bands periods
+BOLLINGER_STDDEV=1.5        # Bollinger Bands stddev multiplier
+BOLLINGER_NO_BUY=1    # 1 = enable no-buy zone, 0 = disable
 CONSOLE_EVENTS=ALL          # Terminal events filter
 # Optional: DISCORD_EVENTS, TELEGRAM_EVENTS, DISCORD_WEBHOOK, etc.
-```  
+```
 
 ---
 
@@ -100,16 +100,15 @@ npm run start
 
 ## 💸 Tip‑Jar & Ledger
 
-- **Tip‑Jar:** 1 % of net profit, sends once ≥ \$0.01.
-- **Ledger:** All trades logged in `trade_log.csv` (perfect for tax reports...or to dazzle your accountant with big numbers 😉)
+* **Tip‑Jar:** 1 % of net profit, sends once ≥ \$0.01.
+* **Ledger:** All trades logged in `trade_log.csv` (perfect for tax reports...or to dazzle your accountant with big numbers 😉)
 
 ---
 
 ## 💡 Best Practices
 
-- Test with small SOL amounts.
-- Use Normal mode on shared RPC; Verbose on private endpoints.
-- Backup `.env`, `dca_state.json`, and `trade_log.csv`.
+* Test with small SOL amounts.
+* Backup `.env`, `dca_state.json`, and `trade_log.csv`.
 
 ---
 
@@ -122,3 +121,8 @@ npm run start
 ## 🙏 Acknowledgements
 
 Thanks for choosing **NoMo' FOMO**—fork, customize, and share your gains!
+
+---
+
+✅ **You can copy the entire block above and paste it directly into your `README.md` file!**
+If you'd like this as a downloadable file or PR template, just let me know 🚀.

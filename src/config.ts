@@ -38,6 +38,10 @@ export interface BotConfig {
   sellProfitPct: number;
   tickIntervalMs: number;
   maxAutoSlippageBps: number;
+  bollingerPeriod: number;
+  bollingerStdDev: number;
+  bollingerNoBuy: boolean;
+
 
   // channels & filters (comma-separated list of EventKind or "ALL")
   consoleEvents: string;
@@ -46,7 +50,6 @@ export interface BotConfig {
   discordWebhook?: string;
   telegramBot?: string;
   telegramChat?: string;
-  proVersion: boolean;
 }
 
 export function buildConfig(): BotConfig {
@@ -66,6 +69,9 @@ export function buildConfig(): BotConfig {
     dcaVolMult: Number(process.env.DCA_VOL_MULT ?? 2),
     dcaPctMult: Number(process.env.DCA_PCT_MULT ?? 1),
     sellProfitPct: Number(process.env.SELL_PROFIT_PCT ?? 2.5),
+    bollingerPeriod: Number(process.env.BOLLINGER_PERIOD ?? 20),
+    bollingerStdDev: Number(process.env.BOLLINGER_STDDEV ?? 1.5),
+    bollingerNoBuy: (process.env.BOLLINGER_NO_BUY ?? "1") === "1",
     consoleEvents: process.env.CONSOLE_EVENTS ?? "ALL",
     tickIntervalMs: Number(process.env.TICK_INTERVAL_MS ?? 60000),
     discordEvents: process.env.DISCORD_EVENTS,
@@ -73,7 +79,6 @@ export function buildConfig(): BotConfig {
     discordWebhook: process.env.DISCORD_WEBHOOK,
     telegramBot: process.env.TELEGRAM_BOT_TOKEN,
     telegramChat: process.env.TELEGRAM_CHAT_ID,
-    proVersion: process.env.VERBOSE_VERSION === "1",
     maxAutoSlippageBps: Number(process.env.MAX_AUTO_SLIPPAGE_BPS ?? 100), // 1% default
   };
 }

@@ -25,6 +25,8 @@ import { NotificationService } from "./notificationService";
 import { StateStore } from "./stateStore";
 import { JupiterClient } from "./jupiterClient";
 import { logTrade } from "./logger";
+import { BollingerBands } from "./bollingerBands";
+
 
 export class DCABot {
   private readonly SOL_MINT =
@@ -37,7 +39,7 @@ export class DCABot {
   private nextDropPct(buyIndex: number) {
     return this.cfg.buyDropPct * Math.pow(this.cfg.dcaPctMult, buyIndex);
   }
-
+  
   private tokenDecimals = 6;
   private tokenMult = 1_000_000n; // updated after init()
   private pausedForNoFunds = false;
@@ -47,6 +49,7 @@ export class DCABot {
   private quoteSymbol: string = "";
   private tokenLogo?: string;
   private solUsdCache = { ts: 0, price: 0 };
+  private totalLadderSol: number = 0;
 
   constructor(
     private cfg: BotConfig,
@@ -54,7 +57,8 @@ export class DCABot {
     private notify: NotificationService,
     private jup: JupiterClient,
     private conn: Connection,
-    private kp: Keypair
+    private kp: Keypair,
+    private bollinger: BollingerBands,
   ) {}
 
   // ------------------ helpers ------------------
@@ -167,24 +171,6 @@ export class DCABot {
   }
 
 
-  private async fetchBalance(): Promise<number> {
-    // FREE tier: skip RPC
-    if (!this.cfg.proVersion) return this.prevBal;
-
-    // PRO tier: perform RPC
-    const lamports = await this.conn.getBalance(this.kp.publicKey);
-    if (lamports !== this.prevBal) {
-      const diffSol = (lamports - this.prevBal) / 1e9;
-      if (this.prevBal !== 0)
-        await this.notify.send(
-          EventKind.BALANCE,
-          `ℹ️ Wallet balance changed by ${diffSol.toFixed(3)} SOL`
-        );
-      this.prevBal = lamports;
-    }
-    return lamports;
-  }
-
   private async recentManualSalesDetected(): Promise<boolean> {
     const sigs = await this.conn.getSignaturesForAddress(this.kp.publicKey, {
       limit: 20,
@@ -215,30 +201,29 @@ export class DCABot {
     return false;
   }
 
-  private rollingPnLSummary(): string | null {
-    const horizon = Date.now() - 12 * 60 * 60 * 1000; // 12h
-    const recent = this.state.sells.filter((s) => s.ts >= horizon);
-    if (recent.length === 0) return null;
+private rollingPnLSummary(): string | null {
+  const horizon = Date.now() - 12 * 60 * 60 * 1000; 
+  const recent = this.state.sells.filter((s) => s.ts >= horizon);
+  if (recent.length === 0) return null;
 
-    const usd = recent.reduce((s, r) => s + r.diffUsd, 0);
-    const sol = recent.reduce((s, r) => s + r.diffSol, 0);
-    const costUsd = recent.reduce(
-      (s, r) => s + (r.diffUsd / (r.diffPct / 100 || 1)),
-      0
-    );
-    const pct = costUsd === 0 ? 0 : (usd / costUsd) * 100;
+  const usdProfit = recent.reduce((sum, s) => sum + s.diffUsd, 0);
+  const solProfit = recent.reduce((sum, s) => sum + s.diffSol, 0);
 
-    return `⏱ 12h PnL: ${pct.toFixed(2)}% | ${sol.toFixed(3)} SOL | $${usd.toFixed(2)}`;
+  if (this.totalLadderSol === 0) {
+    return `⏱ 12h PnL: ${solProfit.toFixed(5)} SOL | $${usdProfit.toFixed(2)} (no budget data)`;
   }
+
+  const pnlPct = (solProfit / this.totalLadderSol) * 100;
+
+  return `⏱ 12h PnL: ${pnlPct.toFixed(2)}% | ${solProfit.toFixed(5)} SOL | $${usdProfit.toFixed(2)}`;
+}
+
+
+
 
   // ------------------ trade executors ------------------
 
   private async execBuy(lamports: number, priceUSD: number) {
-    if (this.cfg.proVersion) {
-      const balance = await this.fetchBalance();
-      if (balance < lamports) throw new Error("Insufficient SOL for buy");
-    }
-
     try {
       const q = await this.jup.quote(
         this.SOL_MINT,
@@ -472,19 +457,12 @@ private async execSellAll(priceUSD: number) {
       // @ts-ignore parsed info
       this.tokenDecimals = info.value?.data.parsed.info.decimals ?? 6;
       this.tokenMult = BigInt(10 ** this.tokenDecimals);
-      if (this.cfg.proVersion) {
-        await this.notify.send(
-          EventKind.START,
-          `ℹ️ Token decimals: ${this.tokenDecimals}`
-        );
-      }
     } catch {
       await this.notify.send(
         EventKind.START,
         "⚠️ Couldn't fetch decimals – default 6"
       );
     }
-
     if (
       this.state.tokenMint &&
       this.state.tokenMint !== this.cfg.toTokenMint
@@ -540,6 +518,7 @@ private async execSellAll(priceUSD: number) {
       totalSol += this.nextSize(k) / 1e9;
       priceFactor *= 1 - this.nextDropPct(k) / 100;
     }
+    this.totalLadderSol = totalSol;
     const maxDrop = 1 - priceFactor;
 
     const ladderMsg =
@@ -551,9 +530,7 @@ private async execSellAll(priceUSD: number) {
           )} SOL • Absorbs ≈ ${(maxDrop * 100).toFixed(1)} %`;
     await this.notify.send(EventKind.START, ladderMsg);
 
-    this.prevBal = this.cfg.proVersion
-      ? await this.conn.getBalance(this.kp.publicKey)
-      : 0;
+    this.prevBal = 0;
 
     await this.notify.send(EventKind.START, "🚀 DCA bot live");
   }
@@ -561,13 +538,6 @@ private async execSellAll(priceUSD: number) {
   async tick(): Promise<void> {
 
     try {
-      if (this.cfg.proVersion) {
-        if (await this.recentManualSalesDetected()) {
-          this.state.buys = [];
-          this.state.save();
-        }
-      }
-
       if (await this.detectUnderflowAndReset()) {
           this.lastTickTime = Date.now();
           return;
@@ -586,13 +556,19 @@ private async execSellAll(priceUSD: number) {
         const solUsd = await this.solPriceUSD();
         const price = solOut * solUsd;
 
+        // bollinger bands tracking
+        this.bollinger.addPrice(price);
+        const upper = this.bollinger.upperBand;
+        const stdDev = this.bollinger.stdDev;
+
         // 3. Emit the tick
         await this.notify.send(
           EventKind.TICK,
           `🪙 ${this.tokenSymbol} • $${price.toFixed(6)}`
         );
-
-        //build and set the console title
+        if (this.bollinger.mean !== null && this.bollinger.stdDev !== null) {
+          await this.notify.send(EventKind.TICK, `📈 BB Mean: $${(this.bollinger.mean ?? 0).toFixed(6)}, StdDev: ${(stdDev ?? 0).toFixed(6)}`)
+        }      //build and set the console title
         const avgCost    = this.avgPrice();   
         const tpPrice    = avgCost * (1 + this.cfg.sellProfitPct/100);
         const neededPct  = (1 - (tpPrice / price)) * 100;
@@ -606,11 +582,17 @@ private async execSellAll(priceUSD: number) {
 
         setConsoleTitle(title);
 
-
+      // first buy logic
       if (this.state.buys.length === 0) {
-        await this.notify.send(EventKind.TICK, "🔰 First buy");
-        await this.execBuy(this.cfg.initialBuyLamports, price);
-        this.state.save();
+        if (this.cfg.bollingerNoBuy && upper !== null && price > upper) {
+          await this.notify.send(EventKind.TICK, 
+            `⚠️ Price $${price.toFixed(6)} > Bollinger no-buy zone $${upper.toFixed(6)} — waiting for better entry.`);
+          return; // skip buying logic
+          } else {
+            await this.notify.send(EventKind.TICK, "🔰 First buy");
+            await this.execBuy(this.cfg.initialBuyLamports, price);
+            this.state.save();
+            }        
         this.lastTickTime = Date.now();
         return;
       }
@@ -631,15 +613,6 @@ private async execSellAll(priceUSD: number) {
       let nextLamports: number | null = null;
       if (this.cfg.maxBuys === 0 || idx < this.cfg.maxBuys) {
         nextLamports = this.nextSize(idx);
-      }
-      if (nextLamports !== null && this.cfg.proVersion) {
-        const solLeft = (await this.fetchBalance()) / 1e9;
-        await this.notify.send(
-          EventKind.TICK,
-          `📈 Next buy (SOL): ${(nextLamports / 1e9).toFixed(
-            3
-          )} | Remaining ≈ ${solLeft.toFixed(3)} SOL`
-        );
       }
 
       if (price <= buyBelow) {
